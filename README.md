@@ -1,4 +1,4 @@
-# wetools
+# lapp-tools
 
 > An electron-vue project
 

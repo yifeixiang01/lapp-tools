@@ -4,8 +4,7 @@
     <span class="app-name">{{name}}</span>
 
     <div :class="['operation', showOperation? 'operation-show': '']" @mouseleave="mouseOver">
-      <div class="btn danger" @click.stop="clearAppStorage">清缓存</div>
-      <div class="btn warning" @click.stop="closeApp">关闭</div>
+      <div class="btn danger" @click.stop="clearAppStorage">PUSH车机</div>
     </div>
   </div>
 </template>

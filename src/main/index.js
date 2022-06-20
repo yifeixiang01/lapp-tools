@@ -65,11 +65,9 @@ autoUpdater.on('update-downloaded', () => {
 })
 
 app.on('ready', () => {
-  console.log('-----show1')
   if (process.env.NODE_ENV === 'production') autoUpdater.checkForUpdates()
 
   ipcMain.on('show-context-menu', (event) => {
-    console.log('-----show')
     createMenu(event)
   })
 })

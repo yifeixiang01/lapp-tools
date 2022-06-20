@@ -82,7 +82,7 @@
         <device-list v-if="drawerTitle === '设备管理'"/>
         <lapp-list v-else-if="drawerTitle === '轻应用管理'"/>
         <device-operation v-else-if="drawerTitle === '设备操作'"/>
-        <!-- <app-list v-else-if="drawerTitle === '应用管理'"/> -->
+        <android-app-list v-else-if="drawerTitle === '应用管理'"/>
       </div>
       
     </el-drawer>
@@ -98,8 +98,7 @@
 <script>
 import DeviceList from '../components/DeviceList.vue'
 import LappList from '../components/LappList.vue'
-import DeviceOperation from '../components/DeviceOperation.vue'
-// import AppList from '../components/AppList.vue'
+import AndroidAppList from '../components/AndroidAppList.vue'
 import AndroidApp from '../components/AndroidApp.vue'
 import AdbBtn from '../components/adb-btn.vue'
 import LappCompileBtn from '../components/LappCompileBtn.vue'
@@ -112,8 +111,7 @@ export default {
   components: {
     DeviceList,
     LappList,
-    DeviceOperation,
-    // AppList,
+    AndroidAppList,
     AndroidApp,
     AdbBtn,
     LappCompileBtn,
@@ -195,7 +193,6 @@ export default {
       switch (name) {
         case 'device': this.drawerTitle = '设备管理'; break
         case 'lapp': this.drawerTitle = '轻应用管理'; break
-        case 'deviceOperation': this.drawerTitle = '设备操作'; break
         case 'appList': this.drawerTitle = '应用管理'; break
       }
       this.showDrawer = true
