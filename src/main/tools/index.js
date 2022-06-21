@@ -8,55 +8,6 @@ function _renameFile (oldPath, newPath) {
   fs.renameSync(oldPath, newPath)
   return Promise.resolve()
 }
-/**
- * 将轻应用进行编译，并生成.wxapkg文件
- * @param {*} lappName 轻应用中文名
- * @param {*} projectPath 轻应用项目路径
- * @param {*} lappCompilePath 轻应用编译后的轻应用包存放目录
- * @param {*} wechatDevtoolsPath 轻应用开发工具的目录
- */
-function _compileLapp (lappName, projectPath, lappCompilePath, wechatDevtoolsPath) {
-  return new Promise((resolve, reject) => {
-    console.log(`开始编译“${lappName}”轻应用`)
-    let timer = null
-    let workerProcess = exec(`cli auto-preview --project ${projectPath}`, {cwd: wechatDevtoolsPath}, (error, stdout, stderr) => {
-      if (error) {
-        console.log('+++error', error)
-      }
-      console.log('+++stdout', stdout)
-      if (stdout.indexOf(19) > -1) {
-        reject(new Error('项目路径错误'))
-      }
-      console.log('+++stderr', stderr)
-    })
-
-    workerProcess.stdout.on('error', data => {
-      console.log('stdout', data)
-    })
-    workerProcess.stderr.on('data', data => {
-      console.log('stderr', data)
-    })
-    workerProcess.on('close', code => {
-      console.log('编译close', code)
-      if (code === 0) {
-        console.log('开始监听文件变化', `${lappCompilePath}/__APP__.wxapkg`)
-        fs.watch(`${lappCompilePath}/__APP__.wxapkg`, (eventType, filename) => {
-          console.log('文件变化', eventType, filename)
-          if (eventType === 'change') {
-            clearTimeout(timer)
-            timer = setTimeout(() => {
-              console.log('编译完成--------')
-              resolve()
-            }, 300)
-          }
-        })
-      } else {
-        console.log(`编译失败,code=${code}`)
-        reject(new Error(`编译失败，code=${code}`))
-      }
-    })
-  })
-}
 
 /**
  * 在电脑上拷贝一个文件到另一个目录
@@ -187,13 +138,22 @@ function _getIPAddress () {
   }
 }
 
+/**
+ * 读取文件内容
+ */
+function _readFile ({path}) {
+  return new Promise(resolve => {
+    resolve(fs.readFileSync(path))
+  })
+}
+
 export default {
-  _compileLapp,
   _copyFile,
   _startCMD,
   _getDevices,
   _formateDate,
   _isAppRunning,
   _getIPAddress,
-  _renameFile
+  _renameFile,
+  _readFile
 }

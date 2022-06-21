@@ -1,6 +1,11 @@
 <template>
   <div>
-    <el-table  :data="lappList" height="480" style="width: 100%">
+    <el-table  :data="list" height="480" style="width: 100%">
+      <el-table-column  label="图标" width="120" prop="icon">
+        <template slot-scope="scope">
+          <el-avatar :src="scope.row.icon" :icon="defaultIcon" fit="fill" :shape="scope.row.shape"></el-avatar>
+        </template>
+      </el-table-column>
       <el-table-column  label="中文名" width="100" prop="name"></el-table-column>
       <el-table-column  label="英文名" width="120" prop="appName"></el-table-column>
       <el-table-column  label="项目路径"  prop="path"></el-table-column>
@@ -23,6 +28,18 @@
         <el-form-item label="英文名" prop="appName">
           <el-input v-model="newLapp.appName" autocomplete="off"></el-input>
         </el-form-item>
+        <el-form-item label="图标：">
+          <el-col :span="4">
+            <el-avatar :src="newLapp.icon" :icon="defaultIcon" fit="fill" class="app-icon" :shape="newLapp.shape" @click.native="btnChange"></el-avatar>
+            <input type="file" ref="file" id="file" hidden accept="image/png,image/gif,image/jpeg" @change="fileChange"/>
+          </el-col>
+          <el-col :span="10">
+            <el-select v-model="newLapp.shape" placeholder="图标形状">
+              <el-option label="圆形" value="circle"></el-option>
+              <el-option label="方形" value="square"></el-option>
+            </el-select>
+          </el-col>
+        </el-form-item>
         <el-form-item label="项目路径" prop="path">
           <el-input v-model="newLapp.path" autocomplete="off"></el-input>
         </el-form-item>
@@ -35,17 +52,17 @@
   </div>
 </template>
 <script>
-import Store from 'electron-store'
+import { mapState } from 'vuex'
 const fs = require('fs')
-const store = new Store()
 
 export default {
   name: 'LappList',
   data () {
     return {
-      lappList: store.get('lappList') || [],
+      defaultIcon: 'el-icon-burger',
       newLapp: {
         name: '',
+        icon: '',
         appName: '',
         path: ''
       },
@@ -91,10 +108,28 @@ export default {
       editIndex: ''
     }
   },
+  computed: {
+    ...mapState({
+      list: state => state.LappList.list
+    })
+  },
   created () {
 
   },
   methods: {
+    fileChange (e) {
+      console.log(this.$refs.file.files[0])
+      var fr = new FileReader()
+      // 资源的读取
+      fr.readAsDataURL(this.$refs.file.files[0])
+      // 绑定读取完毕事件
+      fr.onload = () => {
+        this.$set(this.newLapp, 'icon', fr.result)
+      }
+    },
+    btnChange () {
+      this.$refs.file.click()
+    },
     // 添加轻应用
     addLapp () {
       this.dialogTitle = '添加轻应用'
@@ -123,19 +158,25 @@ export default {
       this.$refs[formName].validate((valid) => {
         if (valid) {
           let newLapp = JSON.parse(JSON.stringify(this.newLapp))
-          if (this.editIndex === '') { // 添加轻应用
-            this.lappList.push(newLapp)
-          } else if (this.editIndex !== '') { // 修改轻应用
-            console.log('修改', this.editIndex, newLapp)
-            let index = this.editIndex
-            this.lappList[index].name = newLapp.name
-            this.lappList[index].appName = newLapp.appName
-            this.lappList[index].path = newLapp.path
+          if (this.editIndex === '') { // 添加应用
+            let filter = this.list.filter(item => item.name === newLapp.name)
+            if (filter.length > 0) {
+              this.$message({
+                message: '该应用已存在！',
+                type: 'warning'
+              })
+              return
+            } else {
+              this.list.push(newLapp)
+            }
+          } else if (this.editIndex !== '') { // 修改应用
+            console.log('修改')
+            this.$set(this.list, this.editIndex, newLapp)
           }
           this.editIndex = ''
           this.dialogShow = false
           this.$refs[formName].resetFields()
-          this.$store.commit('setLappList', {list: this.lappList})
+          this.$store.commit('setLappList', {list: this.list})
         } else {
           console.log('error submit!!')
           return false

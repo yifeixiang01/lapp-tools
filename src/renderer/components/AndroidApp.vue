@@ -1,6 +1,6 @@
 <template>
   <div :class="['app-wrapper', !selectedDevice? 'disable': '']" @click="startApp" @contextmenu="mouseRight">
-    <el-avatar :src="src" :icon="icon" fit="fill" :shape="shape"></el-avatar>
+    <el-avatar :src="src" :icon="defaultIcon" fit="fill" :shape="shape"></el-avatar>
     <span class="app-name">{{name}}</span>
 
     <div :class="['operation', showOperation? 'operation-show': '']" @mouseleave="mouseOver">
@@ -23,6 +23,7 @@ export default {
   },
   data () {
     return {
+      defaultIcon: 'el-icon-burger',
       showOperation: false
     }
   },
@@ -67,7 +68,6 @@ export default {
     // 鼠标右击应用图标，打开删除和清缓存按钮
     mouseRight () {
       if (this.selectedDevice) {
-        console.log('mouseRight')
         this.showOperation = true
       }
     },
@@ -81,6 +81,7 @@ export default {
   .app-wrapper{
     width: 60px;
     height: 80px;
+    display: inline-block;
     display: flex;
     flex-direction: column;
     align-items: center;

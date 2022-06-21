@@ -1,5 +1,5 @@
 <template>
-  <el-button type="primary" size="medium" :disabled="!selectedDevice" @click="adbCmd">{{text}}</el-button>
+  <el-button type="primary" class="button" size="medium" :disabled="!selectedDevice" @click="adbCmd">{{text}}</el-button>
 </template>
 <script>
 import adb from '../../main/adb/index'
@@ -36,5 +36,7 @@ export default {
 }
 </script>
 <style scoped>
-
+  .button{
+    margin: 10px 0;
+  }
 </style>

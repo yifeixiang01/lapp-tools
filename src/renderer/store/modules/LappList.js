@@ -3,23 +3,18 @@ const store = new Store()
 
 const state = {
   list: store.get('lappList') || [],
-  selectedLapp: null,
-  aimDirection: null
+  selectedLapp: null
 }
 
 const mutations = {
   setLappList: (state, payload) => {
     console.log('setLappList', payload)
     state.list = payload.list
-    store.set('list', payload.list)
+    store.set('lappList', payload.list)
   },
   // 设置选择的轻应用
   setSelectedLapp: (state, payload) => {
     state.selectedLapp = payload.selectedLapp
-  },
-  // 设置车机上要push的文件夹
-  setAimDirection: (state, payload) => {
-    state.aimDirection = payload.aimDirection
   }
 }
 const actions = {

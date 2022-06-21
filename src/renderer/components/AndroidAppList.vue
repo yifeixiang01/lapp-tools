@@ -1,7 +1,11 @@
 <template>
   <div>
     <el-table  :data="list" height="480" style="width: 100%">
-      <el-table-column  label="图标" width="120" prop="icon"></el-table-column>
+      <el-table-column  label="图标" width="120" prop="icon">
+        <template slot-scope="scope">
+          <el-avatar :src="scope.row.icon" :icon="defaultIcon" fit="fill" :shape="scope.row.shape"></el-avatar>
+        </template>
+      </el-table-column>
       <el-table-column  label="应用名" width="100" prop="name"></el-table-column>
       
       <el-table-column  label="包名"  prop="packageName"></el-table-column>
@@ -17,14 +21,23 @@
     </el-table>
     <!-- 修改、添加对话框 -->
     <el-dialog :title="dialogTitle" width="70%" :modal="false" :visible.sync="dialogShow">
-      <el-form ref="newApp" :model="newApp" :rules="rules" label-position="left">
-        <el-form-item label="应用名" prop="name">
+      <el-form ref="newApp" :model="newApp" :rules="rules" label-position="left" label-width="80px">
+        <el-form-item label="应用名:" prop="name">
           <el-input v-model="newApp.name" autocomplete="off"></el-input>
         </el-form-item>
-        <el-form-item label="图标" prop="appName">
-          <el-input v-model="newApp.ion" autocomplete="off"></el-input>
+        <el-form-item label="图标：">
+          <el-col :span="4">
+            <el-avatar :src="newApp.icon" :icon="defaultIcon" fit="fill" class="app-icon" :shape="newApp.shape" @click.native="btnChange"></el-avatar>
+            <input type="file" ref="file" id="file" hidden accept="image/png,image/gif,image/jpeg" @change="fileChange"/>
+          </el-col>
+          <el-col :span="10">
+            <el-select v-model="newApp.shape" placeholder="图标形状">
+              <el-option label="圆形" value="circle"></el-option>
+              <el-option label="方形" value="square"></el-option>
+            </el-select>
+          </el-col>
         </el-form-item>
-        <el-form-item label="包名" prop="path">
+        <el-form-item label="包名：" prop="packageName">
           <el-input v-model="newApp.packageName" autocomplete="off"></el-input>
         </el-form-item>
       </el-form>
@@ -36,20 +49,18 @@
   </div>
 </template>
 <script>
-import Store from 'electron-store'
 // const fs = require('fs')
-const store = new Store()
-const appList = [
-  {name: '微信', icon: '', src: 'https://ss3.bdstatic.com/70cFv8Sh_Q1YnxGkpoWK1HF6hhy/it/u=3336519328,2903738409&fm=26&gp=0.jpg', shape: 'square', packageName: 'com.tencent.mm/com.tencent.mm.ui.LauncherUI'}
-]
+import { mapState } from 'vuex'
+
 export default {
   name: 'AndroidAppList',
   data () {
     return {
-      list: store.get('androidAppList') || appList,
+      defaultIcon: 'el-icon-burger',
       newApp: {
         name: '',
-        appName: '',
+        icon: '',
+        shape: 'square',
         path: ''
       },
       rules: {
@@ -91,21 +102,43 @@ export default {
       },
       dialogShow: false,
       dialogTitle: '',
-      editIndex: ''
+      editIndex: '',
+      imgSavePath: '',
+      appType: '轻应用App'
     }
   },
+  computed: {
+    ...mapState({
+      list: state => state.AndroidAppList.list
+    })
+  },
   created () {
-
+    console.log('applist', this.list)
   },
   methods: {
-    // 添加应用
+    fileChange (e) {
+      // this.newApp.icon = this.$refs.file.files[0].path
+      console.log(this.$refs.file.files[0])
+      var fr = new FileReader()
+      // 资源的读取
+      fr.readAsDataURL(this.$refs.file.files[0])
+      // 绑定读取完毕事件
+      fr.onload = () => {
+        // 将图片的src指向读取到的base64
+        this.$set(this.newApp, 'icon', fr.result)
+      }
+    },
+    btnChange () {
+      this.$refs.file.click()
+    },
     addApp () {
       this.dialogTitle = '添加应用'
       this.dialogShow = true
-      this.newApp = {name: '', appName: '', path: ''}
+      this.newApp = {name: '', packageName: '', icon: '', shape: 'square'}
     },
     // 编辑应用
     handleEdit (index, row) {
+      console.log(row)
       this.dialogTitle = '修改应用'
       this.newApp = JSON.parse(JSON.stringify(row))
       this.editIndex = index
@@ -127,13 +160,19 @@ export default {
         if (valid) {
           let newApp = JSON.parse(JSON.stringify(this.newApp))
           if (this.editIndex === '') { // 添加应用
-            this.list.push(newApp)
+            let filter = this.list.filter(item => item.packageName === newApp.packageName)
+            if (filter.length > 0) {
+              this.$message({
+                message: '该应用已存在！',
+                type: 'warning'
+              })
+              return
+            } else {
+              this.list.push(newApp)
+            }
           } else if (this.editIndex !== '') { // 修改应用
-            console.log('修改', this.editIndex, newApp)
             let index = this.editIndex
-            this.list[index].name = newApp.name
-            this.list[index].icon = newApp.icon
-            this.list[index].packageName = newApp.packageName
+            this.$set(this.list, index, newApp)
           }
           this.editIndex = ''
           this.dialogShow = false
@@ -144,10 +183,15 @@ export default {
           return false
         }
       })
+    },
+    changeAppType (type) {
+      this.appType = type
     }
   }
 }
 </script>
 <style scoped>
-
+  .app-icon{
+    cursor: pointer;
+  }
 </style>

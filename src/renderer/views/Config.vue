@@ -1,8 +1,12 @@
 <template>
   <div>
     <el-form ref="AppConfig" label-position="left" label-width="120px" :rules="rules" :model="AppConfig">
+
       <el-form-item label="文件输出路径" prop="outputPath">
-        <el-input v-model="AppConfig.outputPath" placeholder="截图、录屏、日志等文件输出目录"></el-input>
+        <input type="file" ref="file" id="file" hidden @change="fileChange" webkitdirectory>
+        <el-input placeholder="截图、录屏、日志等文件输出目录" v-model="AppConfig.outputPath" class="input-with-select">
+          <el-button slot="append" icon="el-icon-folder" type="success" @click="btnChange"></el-button>
+        </el-input>
       </el-form-item>
       <el-form-item>
         <el-button type="primary" @click="submitForm('AppConfig')">保存</el-button>
@@ -13,12 +17,15 @@
 <script>
 // import { mapState } from 'vuex'
 import Store from 'electron-store'
+let cwd = process.cwd() + ((process.env.NODE_ENV === 'development') ? '/extraResources/scrcpy' : '/resources/extraResources/scrcpy')
+
 const store = new Store()
 const fs = require('fs')
 export default {
   name: 'Config',
   data () {
     return {
+      prompt: `首次使用，请将此路径添加到系统环境变量：${cwd}`,
       AppConfig: store.get('AppConfig') || {},
       rules: {
         outputPath: [
@@ -54,6 +61,14 @@ export default {
           return false
         }
       })
+    },
+    fileChange (e) {
+      console.log(this.$refs.file.files[0].path)
+      this.AppConfig.outputPath = this.$refs.file.files[0].path
+    },
+    btnChange () {
+      var file = document.getElementById('file')
+      file.click()
     }
   }
 

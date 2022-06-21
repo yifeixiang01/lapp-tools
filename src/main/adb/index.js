@@ -45,7 +45,7 @@ function _rootDevice ({serial}) {
 function _disconnectDevice ({serial}) {
   return new Promise(resolve => {
     console.log('---', serial, `adb disconnect ${serial}`)
-    execSync(`adb disconnect 10.53.133.221:5555`)
+    execSync(`adb disconnect ${serial}`)
   })
 }
 
@@ -54,9 +54,13 @@ function _disconnectDevice ({serial}) {
  * @param {*} serial 设备序列号
  */
 function _connectDevice ({serial}) {
-  return new Promise(resolve => {
-    console.log(serial)
-    execSync(`adb connect ${serial}`)
+  return new Promise((resolve, reject) => {
+    exec(`adb connect ${serial}`, (err, stdout) => {
+      console.log(err)
+      if (stdout.indexOf('10060') > -1) {
+        reject(new Error(`${stdout}`))
+      }
+    })
   })
 }
 
@@ -228,6 +232,24 @@ function _startApp ({serial, packageName}) {
   })
 }
 
+/**
+ * 重启车机
+ * */
+function _restart ({serial}) {
+  return new Promise(resolve => {
+    exec(`adb -s ${serial} reboot`)
+  })
+}
+
+/**
+ * 删除车机上目录下的所有文件
+ * */
+function _removeAllFileInDevice ({serial, path}) {
+  return new Promise(resolve => {
+    exec(`adb -s ${serial} shell rm -rf ${path}/`)
+  })
+}
+
 export default {
   _screenCap,
   _rootDevice,
@@ -240,5 +262,7 @@ export default {
   _startApp,
   _closeApp,
   _pushFileToDevice,
-  _startScrcpy: startScrcpy
+  _startScrcpy: startScrcpy,
+  _restart,
+  _removeAllFileInDevice
 }

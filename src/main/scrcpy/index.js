@@ -46,11 +46,12 @@ function startScrcpy ({serial, windowSetting, outputPath}) {
 }
 // 将投屏参数拼接成字符串指令
 function getCmdStr (serial, options) {
-  let cmdStr = `scrcpy -s ${serial}`
+  let cmdStr = `scrcpy -s ${serial} --max-fps 15`
 
   for (let key in options) {
     cmdStr += cmdObj[key](options[key])
   }
+  console.log('___****', cmdStr)
   return cmdStr
 }
 // 将当前时间格式化为年月日 20201206
