@@ -102,14 +102,11 @@ export default {
         return '当前没有连接任何设备'
       }
       if (this.localDeviceList.length > 0 && this.selectedDevice) {
-        return `当前操作设备：${this.selectedDevice.deviceId}`
+        return `当前操作设备：${this.selectedDevice.serial}`
       }
       if (this.localDeviceList.length > 0 && !this.selectedDevice) {
         return `请选择要操作的设备`
       }
-    },
-    lappCompileList () {
-      return this.lappList.filter(item => item.path !== '')
     }
   },
   mounted () {

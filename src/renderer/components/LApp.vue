@@ -9,7 +9,7 @@
   </div>
 </template>
 <script>
-import adb from '../../main/adb'
+// import adb from '../../main/adb'
 import { mapState } from 'vuex'
 const fs = require('fs')
 const { exec } = require('child_process')
@@ -65,16 +65,17 @@ export default {
     // push轻应用包到车机目录
     pushToDevice () {
       let appConfig = JSON.parse(fs.readFileSync(`${this.path}/config.json`, 'UTF8'))
-
-      if (fs.existsSync(`${this.path}/dist/config.json`)) {
+      console.log(fs.existsSync(`${this.path}/dist/pages`))
+      if (fs.existsSync(`${this.path}/dist/pages`)) {
         let aimDevicePath = `/data/data/com.gwm.applet/files/applet/html/id_${appConfig.appId}/a`
+        console.log(aimDevicePath)
         // 先清除设备上目录下的文件
-        adb._removeAllFileInDevice({serial: this.selectedDevice.serial, path: this.aimDevicePath})
-        adb._pushFileToDevice({serial: this.selectedDevice.serial, filePath: `${this.path}/dist/.`, aimPath: aimDevicePath}).then(res => {
-          this.$message.success(`push成功`)
-        }).catch(err => {
-          this.$message.error(err.toString())
-        })
+        // adb._removeAllFileInDevice({serial: this.selectedDevice.serial, path: this.aimDevicePath})
+        // adb._pushFileToDevice({serial: this.selectedDevice.serial, filePath: `${this.path}/dist/.`, aimPath: aimDevicePath}).then(res => {
+        //   this.$message.success(`push成功`)
+        // }).catch(err => {
+        //   this.$message.error(err.toString())
+        // })
       } else {
         exec(`yarn build:dev`, {cwd: this.path}, (err, stdout, stderr) => {
           console.log('err', err)
