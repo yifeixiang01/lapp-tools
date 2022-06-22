@@ -90,13 +90,12 @@ export default {
     // 添加本地设备
     addLocalDevice (device) {
       let {id: serial, type: status} = device
-
-      // 设备serial中包含本地hostIP，则是连接的本地共享的设备，不显示
+      let linkType = serial.indexOf(':') > -1 ? '无线' : 'USB'
       // 本地列表中已经有相同的设备，则不添加到本地列表里
       let index = this.localDeviceList.findIndex(item => item.deviceId === serial)
 
       if (serial.indexOf(this.hostIP) === -1 && index === -1) {
-        let device = {deviceId: serial, serial, owner: this.userName, status: status}
+        let device = {deviceId: serial, serial, owner: this.userName, status: status, linkType}
 
         this.$store.commit('addLocalDevice', {device: device})
         this.$message({type: 'success', message: `连接到新设备:${device.serial}`})

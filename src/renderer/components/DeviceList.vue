@@ -13,11 +13,11 @@
     </el-form>
     <el-table ref="deviceTable" :data="localDeviceList" highlight-current-row style="width: 100%" @current-change="handleCurrentChange">
       <el-table-column  label="设备"  prop="serial"></el-table-column>
-      <el-table-column  label="状态"  prop="status" width="100"></el-table-column>
+      <el-table-column  label="类型"  prop="linkType" width="100"></el-table-column>
       <el-table-column  label="操作" width="100">
         <template slot-scope="scope">
-          <el-button type="text" size="mini"  @click="handleDisconnect(scope.$index, scope.row)" v-if="scope.row.serial.indexOf(':') > 0">断开</el-button>
           <el-button type="text" size="mini"  @click="handleRestart(scope.$index, scope.row)">重启</el-button>
+          <el-button type="text" size="mini"  @click="handleDisconnect(scope.$index, scope.row)" v-if="scope.row.serial.indexOf(':') > 0">断开</el-button>
         </template>
       </el-table-column>
     </el-table>
