@@ -11,6 +11,7 @@
 <script>
 // import adb from '../../main/adb'
 import { mapState } from 'vuex'
+import adb from '../../main/adb'
 const fs = require('fs')
 const { exec } = require('child_process')
 
@@ -63,30 +64,41 @@ export default {
       this.showOperation = false
     },
     // push轻应用包到车机目录
-    pushToDevice () {
+    async pushToDevice () {
       let appConfig = JSON.parse(fs.readFileSync(`${this.path}/config.json`, 'UTF8'))
-      console.log(fs.existsSync(`${this.path}/dist/pages`))
-      if (fs.existsSync(`${this.path}/dist/pages`)) {
-        let aimDevicePath = `/data/data/com.gwm.applet/files/applet/html/id_${appConfig.appId}/a`
-        console.log(aimDevicePath)
-        // 先清除设备上目录下的文件
-        // adb._removeAllFileInDevice({serial: this.selectedDevice.serial, path: this.aimDevicePath})
-        // adb._pushFileToDevice({serial: this.selectedDevice.serial, filePath: `${this.path}/dist/.`, aimPath: aimDevicePath}).then(res => {
-        //   this.$message.success(`push成功`)
-        // }).catch(err => {
-        //   this.$message.error(err.toString())
-        // })
-      } else {
+      console.log('appConfig', appConfig)
+      let aimDevicePath = `/data/data/com.gwm.applet/files/applet/html/id_${appConfig.appId}/a`
+      console.log('车机端轻应用目录', aimDevicePath)
+
+      if (!adb._isExistFileInDevice({serial: this.selectedDevice.serial, filePath: aimDevicePath})) {
+        this.$message.success('车机端不存在此项目')
+        return
+      }
+
+      // 项目目录dist下没有编译后的文件，会先执行编译
+      if (!fs.existsSync(`${this.path}/dist/pages`) && !fs.existsSync(`${this.path}/dist/css`) && !fs.existsSync(`${this.path}/dist/js`)) {
+        await this.projectCompile()
+      }
+
+      // 开始push前，先清除设备上目录下的文件
+      // adb._removeAllFileInDevice({serial: this.selectedDevice.serial, path: this.aimDevicePath})
+      // adb._pushFileToDevice({serial: this.selectedDevice.serial, filePath: `${this.path}/dist/.`, aimPath: aimDevicePath}).then(res => {
+      //   this.$message.success(`push成功`)
+      // }).catch(err => {
+      //   this.$message.error(err.toString())
+      // })
+    },
+    projectCompile () {
+      return new Promise((resolve) => {
         exec(`yarn build:dev`, {cwd: this.path}, (err, stdout, stderr) => {
           console.log('err', err)
           console.log('stdout', stdout)
           console.log('stderr', stderr)
+          if (stdout.indexOf('DONE  Build complete')) {
+            resolve()
+          }
         })
-      }
-
-      let config = JSON.parse(fs.readFileSync(`${this.path}/package.json`, 'UTF8'))
-      console.log(config)
-      console.log('appConfig', appConfig)
+      })
     }
   }
 }

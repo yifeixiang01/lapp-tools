@@ -44,7 +44,6 @@ export default {
     })
   },
   mounted () {
-    console.log(store.get('historyDevices'))
     this.setCurrentDevice()
   },
   methods: {
