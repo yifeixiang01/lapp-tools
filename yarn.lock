@@ -368,6 +368,11 @@ adbkit-logcat@^1.1.0:
   resolved "https://registry.npm.taobao.org/adbkit-logcat/download/adbkit-logcat-1.1.0.tgz#01d7f9b0cef9093a30bcb3b007efff301508962f"
   integrity sha1-Adf5sM75CTowvLOwB+//MBUIli8=
 
+adbkit-logcat@^2.0.1:
+  version "2.0.1"
+  resolved "http://10.53.131.102:8081/repository/npm-public/adbkit-logcat/-/adbkit-logcat-2.0.1.tgz#d4986b9fc7cfda42733389d46a52124abef43ca5"
+  integrity sha512-MznVzzEzcrWhIaIyblll+a0AL1TICJe/yuaia7HDYTAtiNabR/9amJkAnLt30U8/W7MVBc3mvU1jB/6MJ/TYHw==
+
 adbkit-monkey@~1.0.1:
   version "1.0.1"
   resolved "https://registry.npm.taobao.org/adbkit-monkey/download/adbkit-monkey-1.0.1.tgz#f291be701a2efc567a63fc7aa6afcded31430be1"
@@ -6887,6 +6892,11 @@ no-case@^2.2.0, no-case@^2.3.2:
   integrity sha1-YLgTOWvjmz8SiKTB7V0efSi0ZKw=
   dependencies:
     lower-case "^1.1.1"
+
+node-cmd@^5.0.0:
+  version "5.0.0"
+  resolved "http://10.53.131.102:8081/repository/npm-public/node-cmd/-/node-cmd-5.0.0.tgz#a4a850b569e009bec0199a131c9db607144fdbc0"
+  integrity sha512-4sQTJmsS5uZKAPz/Df9fnIbmvOySfGdW+UreH4X5NcAOOpKjaE+K5wf4ehNBbZVPo0vQ36RkRnhhsXXJAT+Syw==
 
 node-forge@^0.10.0:
   version "0.10.0"

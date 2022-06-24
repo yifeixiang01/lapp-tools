@@ -1,5 +1,5 @@
 {
-  "name": "lite-tools",
+  "name": "lapp-tools",
   "version": "1.0.0",
   "author": "yifeixiang",
   "description": "轻应用桌面工具",
@@ -24,7 +24,7 @@
     "directories": {
       "output": "build"
     },
-    "publish": [ 
+    "publish": [
       {
         "provider": "generic",
         "url": "https://github.com/yifeixiang01/wetools/releases/tag/v0.0.5/Assets"
@@ -63,12 +63,14 @@
   },
   "dependencies": {
     "adbkit": "^2.11.1",
+    "adbkit-logcat": "^2.0.1",
     "axios": "^0.18.0",
     "babili-webpack-plugin": "^0.1.2",
     "download-git-repo": "^3.0.2",
     "electron-store": "^7.0.0",
     "electron-updater": "^4.3.5",
     "element-ui": "^2.15.0",
+    "node-cmd": "^5.0.0",
     "rimraf": "^3.0.2",
     "vue": "^2.5.16",
     "vue-electron": "^1.0.6",

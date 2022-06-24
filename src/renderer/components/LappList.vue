@@ -41,7 +41,10 @@
           </el-col>
         </el-form-item>
         <el-form-item label="项目路径" prop="path">
-          <el-input v-model="newLapp.path" autocomplete="off"></el-input>
+          <input type="file" ref="filePath" id="filePath" hidden @change="filePathChange" webkitdirectory/>
+          <el-input placeholder="截图、录屏、日志等文件输出目录" v-model="newLapp.path" class="input-with-select">
+            <el-button slot="append" icon="el-icon-folder" type="success" @click="filePathselect"></el-button>
+          </el-input>
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
@@ -92,9 +95,10 @@ export default {
         path: [
           {trigger: 'blur',
             validator: (rule, value, callback) => {
+              console.log('校验path', fs.existsSync(`${value}/config.json`), fs.existsSync(`${value}/package.json`))
               if (value === '') {
                 callback(new Error('请输入轻应用的项目路径'))
-              } else if (!(fs.existsSync(`${value}/config.json`) || !(fs.existsSync(`${value}/package.json`)))) {
+              } else if (!fs.existsSync(`${value}/config.json`) || !fs.existsSync(`${value}/package.json`)) {
                 callback(new Error('请输入正确的轻应用项目路径'))
               } else {
                 callback()
@@ -129,6 +133,13 @@ export default {
     },
     btnChange () {
       this.$refs.file.click()
+    },
+    filePathselect () {
+      this.$refs.filePath.click()
+    },
+    filePathChange (e) {
+      console.log('file path change', e)
+      this.$set(this.newLapp, 'path', this.$refs.filePath.files[0].path)
     },
     // 添加轻应用
     addLapp () {
@@ -187,5 +198,7 @@ export default {
 }
 </script>
 <style scoped>
-
+  .app-icon{
+    cursor: pointer;
+  }
 </style>

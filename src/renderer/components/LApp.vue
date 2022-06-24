@@ -5,6 +5,7 @@
 
     <div :class="['operation', showOperation? 'operation-show': '']" @mouseleave="mouseOver">
       <div class="btn " @click.stop="pushToDevice">Push</div>
+      <!-- <div class="btn danger" @click.stop="deleteFile">删除</div> -->
     </div>
   </div>
 </template>
@@ -65,28 +66,51 @@ export default {
     },
     // push轻应用包到车机目录
     async pushToDevice () {
-      let appConfig = JSON.parse(fs.readFileSync(`${this.path}/config.json`, 'UTF8'))
-      console.log('appConfig', appConfig)
-      let aimDevicePath = `/data/data/com.gwm.applet/files/applet/html/id_${appConfig.appId}/a`
-      console.log('车机端轻应用目录', aimDevicePath)
-
-      if (!adb._isExistFileInDevice({serial: this.selectedDevice.serial, filePath: aimDevicePath})) {
-        this.$message.success('车机端不存在此项目')
+      // 因存在项目路径变更的情况，push前会再次检查项目路径是否正确
+      if (!fs.existsSync(`${this.path}/config.json`) || !fs.existsSync(`${this.path}/package.json`)) {
+        this.$message.success('轻应用项目路径有误，请检查后再试')
         return
       }
 
+      let appConfig = JSON.parse(fs.readFileSync(`${this.path}/config.json`, 'UTF8'))
+      let aimDevicePath = `/data/data/com.gwm.applet/files/applet/html/id_${appConfig.appId}/a`
+
       // 项目目录dist下没有编译后的文件，会先执行编译
       if (!fs.existsSync(`${this.path}/dist/pages`) && !fs.existsSync(`${this.path}/dist/css`) && !fs.existsSync(`${this.path}/dist/js`)) {
-        await this.projectCompile()
+        // await this.projectCompile()
+        this.$message.error(`${appConfig.appName}项目未编译`)
+        return
       }
 
+      console.log('appConfig', appConfig)
+      console.log('车机端轻应用目录', aimDevicePath)
+      // 判断车机是否存在轻应用目录
+      await adb._isExistFileInDevice({serial: this.selectedDevice.serial, filePath: aimDevicePath}).catch((err) => {
+        console.log('判断是否存在轻应用项目', err)
+        // this.$message.success('车机端不存在此项目')
+        // 车机端不存在轻应用目录，需要创建目录文件夹，1.创建id_***文件夹，2.创建 a 文件夹
+        let projectDir = `/data/data/com.gwm.applet/files/applet/html/id_${appConfig.appId}`
+        adb._createDirInDevice({serial: this.selectedDevice.serial, path: `${projectDir}`})
+        adb._createDirInDevice({serial: this.selectedDevice.serial, path: `${aimDevicePath}`})
+      })
+
       // 开始push前，先清除设备上目录下的文件
-      // adb._removeAllFileInDevice({serial: this.selectedDevice.serial, path: this.aimDevicePath})
-      // adb._pushFileToDevice({serial: this.selectedDevice.serial, filePath: `${this.path}/dist/.`, aimPath: aimDevicePath}).then(res => {
-      //   this.$message.success(`push成功`)
-      // }).catch(err => {
-      //   this.$message.error(err.toString())
-      // })
+      await adb._isExistFileInDevice({serial: this.selectedDevice.serial, filePath: `${aimDevicePath}/pages`}).then(() => {
+        adb._removeAllFileInDevice({serial: this.selectedDevice.serial, path: aimDevicePath})
+      }).catch(err => {
+        console.error(err)
+      })
+
+      adb._pushFileToDevice({serial: this.selectedDevice.serial, filePath: `${this.path}/dist/.`, aimPath: aimDevicePath}).then(res => {
+        this.$message.success(`push成功`)
+      }).catch(err => {
+        this.$message.error(err.toString())
+      })
+    },
+    deleteFile () {
+      let appConfig = JSON.parse(fs.readFileSync(`${this.path}/config.json`, 'UTF8'))
+      let aimDevicePath = `/data/data/com.gwm.applet/files/applet/html/id_${appConfig.appId}/a`
+      adb._removeAllFileInDevice({serial: this.selectedDevice.serial, path: aimDevicePath})
     },
     projectCompile () {
       return new Promise((resolve) => {

@@ -1,9 +1,10 @@
+import path from 'path'
 const { exec } = require('child_process')
 
 let fileSavePath = ''
 
 // 开发环境外部资源直接在项目根目录，生产环境在resource目录下
-let cwd = process.cwd() + ((process.env.NODE_ENV === 'development') ? '/extraResources/scrcpy' : '/resources/extraResources/scrcpy')
+let cwd = path.join(process.cwd(), ((process.env.NODE_ENV === 'development') ? '/extraResources/scrcpy' : '/resources/extraResources/scrcpy'))
 
 let cmdObj = {
   windowTitle: title => title ? ' --window-title ' + title : '', // 窗口标题

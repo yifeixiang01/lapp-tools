@@ -1,7 +1,6 @@
 import Store from 'electron-store'
 const store = new Store()
 
-
 const state = {
   list: store.get('androidAppList') || []
 }

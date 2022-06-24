@@ -13,6 +13,7 @@
     </el-form>
     <el-table ref="deviceTable" :data="localDeviceList" highlight-current-row style="width: 100%" @current-change="handleCurrentChange">
       <el-table-column  label="设备"  prop="serial"></el-table-column>
+      <el-table-column  label="状态"  prop="status"></el-table-column>
       <el-table-column  label="类型"  prop="linkType" width="100"></el-table-column>
       <el-table-column  label="操作" width="120">
         <template slot-scope="scope">

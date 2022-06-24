@@ -1,6 +1,7 @@
 import Vue from 'vue'
 import Router from 'vue-router'
 import Config from '@/views/Config.vue'
+import Log from '@/views/log.vue'
 Vue.use(Router)
 
 export default new Router({
@@ -14,6 +15,11 @@ export default new Router({
       path: '/config',
       name: 'Config',
       component: Config
+    },
+    {
+      path: '/log',
+      name: 'Log',
+      component: Log
     }
   ]
 })

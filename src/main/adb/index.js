@@ -1,6 +1,8 @@
 import tools from '../tools'
 import {startScrcpy} from '../scrcpy'
+import path from 'path'
 const { exec, execSync } = require('child_process')
+let cwd = path.join(process.cwd(), ((process.env.NODE_ENV === 'development') ? '/extraResources/scrcpy' : '/resources/extraResources/scrcpy'))
 
 /**
  * 将移动设备截屏，并保存到电脑目录
@@ -11,9 +13,9 @@ const { exec, execSync } = require('child_process')
 function _screenCap ({serial, outputPath}) {
   return new Promise(resolve => {
     let date = tools._formateDate()
-    execSync(`adb -s ${serial} shell screencap -p /sdcard/screencap.png`)
+    execSync(`adb -s ${serial} shell screencap -p /sdcard/screencap.png`, {cwd})
     execSync(`adb -s ${serial} pull /sdcard/screencap.png ${outputPath}/screen_${date}.png`)
-    resolve('截屏成功！')
+    resolve({prompt: '截屏成功！'})
   })
 }
 
@@ -23,7 +25,7 @@ function _screenCap ({serial, outputPath}) {
  */
 function _rootDevice ({serial}) {
   return new Promise((resolve, reject) => {
-    exec(`adb -s ${serial} root`, (error, stdout, stderr) => {
+    exec(`adb -s ${serial} root`, {cwd}, (error, stdout, stderr) => {
       console.log(error)
       console.log(stdout)
       if (stdout.indexOf('running as root') > -1) {
@@ -31,7 +33,7 @@ function _rootDevice ({serial}) {
       } else if (stdout.indexOf('cannot run as root') > -1) {
         reject(new Error('root失败！'))
       } else {
-        resolve('root成功！')
+        resolve({pompt: 'root成功！'})
       }
       console.log(stderr)
     })
@@ -45,7 +47,7 @@ function _rootDevice ({serial}) {
 function _disconnectDevice ({serial}) {
   return new Promise(resolve => {
     console.log('---', serial, `adb disconnect ${serial}`)
-    execSync(`adb disconnect ${serial}`)
+    execSync(`adb disconnect ${serial}`, {cwd})
   })
 }
 
@@ -55,7 +57,7 @@ function _disconnectDevice ({serial}) {
  */
 function _connectDevice ({serial}) {
   return new Promise((resolve, reject) => {
-    exec(`adb connect ${serial}`, (err, stdout) => {
+    exec(`adb connect ${serial}`, {cwd}, (err, stdout) => {
       console.log(err)
       if (stdout.indexOf('10060') > -1) {
         reject(new Error(`${stdout}`))
@@ -70,8 +72,8 @@ function _connectDevice ({serial}) {
  */
 function _showLaunch ({serial}) {
   return new Promise(resolve => {
-    execSync(`adb -s ${serial} shell setprop sys.thirdapk.caninstall 1`)
-    execSync(`adb -s ${serial} shell am force-stop com.android.launcherWT`)
+    execSync(`adb -s ${serial} shell setprop sys.thirdapk.caninstall 1`, {cwd})
+    execSync(`adb -s ${serial} shell am force-stop com.android.launcherWT`, {cwd})
   })
 }
 
@@ -82,8 +84,7 @@ function _showLaunch ({serial}) {
  */
 function _isExistFileInDevice ({serial, filePath}) {
   return new Promise((resolve, reject) => {
-    console.log('_+_+_+开始判断设备上文件是否存在')
-    exec(`adb -s ${serial} shell find ${filePath}`, (error, stdout, stderr) => {
+    exec(`adb -s ${serial} shell find ${filePath}`, {cwd}, (error, stdout, stderr) => {
       if (error) {
         console.log('error', JSON.stringify(error), typeof JSON.stringify(error))
       }
@@ -97,7 +98,7 @@ function _isExistFileInDevice ({serial, filePath}) {
         reject(new Error(`设备不存在此文件或文件夹：${filePath}`))
       } else {
         console.log('---存在此文件', filePath)
-        resolve()
+        resolve(true)
       }
     })
   })
@@ -112,7 +113,7 @@ function _isExistFileInDevice ({serial, filePath}) {
  */
 function _getAppInfo ({serial}) {
   return new Promise((resolve, reject) => {
-    exec(`adb -s ${serial} shell "dumpsys window | grep mCurrentFocus"`, (error, stdout, stderr) => {
+    exec(`adb -s ${serial} shell "dumpsys window | grep mCurrentFocus"`, {cwd}, (error, stdout, stderr) => {
       if (error) {
         console.log('error', error)
       }
@@ -122,11 +123,7 @@ function _getAppInfo ({serial}) {
         reject(new Error('设备连接中断'))
       }
 
-      if (stdout) {
-        resolve(stdout)
-      }
-      stdout && resolve(stdout)
-      // let pattern = /(?<=u0).*?(?=\})/
+      stdout && resolve({ message: stdout })
     })
   })
 }
@@ -139,7 +136,7 @@ function _getAppInfo ({serial}) {
 function _clearAppStorage ({serial, appName}) {
   console.log('清除应用缓存', `adb -s ${serial} shell pm clear ${appName}`)
   return new Promise(resolve => {
-    exec(`adb -s ${serial} shell pm clear ${appName}`)
+    exec(`adb -s ${serial} shell pm clear ${appName}`, {cwd})
   })
 }
 
@@ -151,7 +148,7 @@ function _clearAppStorage ({serial, appName}) {
 function _closeApp ({serial, appName}) {
   return new Promise((resolve, reject) => {
     console.log('关闭应用：' + appName)
-    exec(`adb -s ${serial} shell am force-stop ${appName}`, (error, stdout, stderr) => {
+    exec(`adb -s ${serial} shell am force-stop ${appName}`, {cwd}, (error, stdout, stderr) => {
       if (error) {
         console.log('error', error)
       }
@@ -173,10 +170,9 @@ function _closeApp ({serial, appName}) {
 function _pushFileToDevice ({serial, filePath, aimPath}) {
   return new Promise((resolve, reject) => {
     console.log('-----开始将文件push到车机')
-    let folderPath = aimPath.slice(0, aimPath.lastIndexOf('/'))
 
     // 先判断设备上将要push的目录是否存在
-    _isExistFileInDevice({serial, filePath: folderPath}).then(() => {
+    _isExistFileInDevice({serial, filePath: aimPath}).then(() => {
       console.log(`adb -s ${serial} push ${filePath} ${aimPath}`)
       let workerProcess = exec(`adb -s ${serial} push ${filePath} ${aimPath}`, {cwd: './'})
 
@@ -197,7 +193,7 @@ function _pushFileToDevice ({serial, filePath, aimPath}) {
         console.log('push close', code)
         if (code === 0) {
           console.log('------完成push文件到车机')
-          resolve()
+          resolve(true)
         }
       })
     }).catch(err => {
@@ -214,7 +210,7 @@ function _pushFileToDevice ({serial, filePath, aimPath}) {
 function _startApp ({serial, packageName}) {
   console.log(`adb -s ${serial} shell am start ${packageName}`)
   return new Promise((resolve, reject) => {
-    exec(`adb -s ${serial} shell am start ${packageName}`, (error, stdout, stderr) => {
+    exec(`adb -s ${serial} shell am start ${packageName}`, {cwd}, (error, stdout, stderr) => {
       if (error) {
         console.log('111111error', JSON.stringify(error))
       }
@@ -237,7 +233,7 @@ function _startApp ({serial, packageName}) {
  * */
 function _restart ({serial}) {
   return new Promise(resolve => {
-    exec(`adb -s ${serial} reboot`)
+    exec(`adb -s ${serial} reboot`, {cwd})
   })
 }
 
@@ -245,11 +241,42 @@ function _restart ({serial}) {
  * 删除车机上目录下的所有文件
  * */
 function _removeAllFileInDevice ({serial, path}) {
-  return new Promise(resolve => {
-    exec(`adb -s ${serial} shell rm -rf ${path}/`)
+  return new Promise((resolve, reject) => {
+    _isExistFileInDevice({serial, filePath: path}).then(() => {
+      execSync(`adb -s ${serial} shell rm -r ${path}/*`, {cwd})
+    }).catch(err => {
+      reject(err)
+    })
   })
 }
 
+/**
+ * 在车机目录下创建文件夹
+ */
+function _createDirInDevice ({serial, path}) {
+  execSync(`adb -s ${serial} shell mkdir ${path}`, {cwd})
+}
+
+/**
+ * 打开系统设置
+ */
+function _openSystemSetting ({serial}) {
+  execSync(`adb -s ${serial} shell am start com.android.settings/.Settings`, {cwd})
+}
+
+/**
+ * 获取设备ip
+ */
+function _getDeviceIP ({serial}) {
+  return new Promise(resolve => {
+    exec(`adb -s ${serial} shell ifconfig wlan0`, {cwd}, (err, stdout, stderr) => {
+      console.log('获取设备ip err', err)
+      console.log('获取设备ip stdout', stdout)
+      console.log('获取设备ip stderr', stderr)
+      resolve({message: stdout})
+    })
+  })
+}
 export default {
   _screenCap,
   _rootDevice,
@@ -264,5 +291,8 @@ export default {
   _pushFileToDevice,
   _startScrcpy: startScrcpy,
   _restart,
-  _removeAllFileInDevice
+  _removeAllFileInDevice,
+  _createDirInDevice,
+  _openSystemSetting,
+  _getDeviceIP
 }

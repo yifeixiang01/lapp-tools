@@ -27,7 +27,7 @@ export default {
   methods: {
     adbCmd () {
       adb[this.cmdFn]({serial: this.selectedDevice.deviceId, ...this.params}).then(res => {
-        this.$emit('adbcallback', {message: res})
+        this.$emit('adbcallback', {message: res.message, prompt: res.prompt})
       }).catch(err => {
         this.$message.error(err.toString())
       })

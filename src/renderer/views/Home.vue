@@ -15,8 +15,10 @@
         </div>
         <el-row type="flex">
           <el-col :span="4" v-for="operation in operationList" :key="operation.name">
-            <adb-btn :text="operation.name" :cmdFn="operation.cmd" :params="{outputPath: AppConfig.outputPath}"/>
+            <adb-btn :text="operation.name" :cmdFn="operation.cmd" :params="{outputPath: AppConfig.outputPath}" @adbcallback="showMessage"/>
           </el-col>
+          <el-button type="primary" size="mini" @click="startCmd">CMD</el-button>
+          <el-button type="primary" size="mini" @click="newWindow">新窗口</el-button>
         </el-row>
       </el-card>
 
@@ -47,7 +49,7 @@
     </el-drawer>
 
     <el-dialog  title="应用信息"  :visible.sync="showAppInfoDialog"  width="60%">
-      <p>{{currentAppInfo}}</p>
+      <div v-html="currentAppInfo"></div>
     </el-dialog>
   </el-container>
 </template>
@@ -57,11 +59,10 @@ import DeviceList from '../components/DeviceList.vue'
 import lapp from '@/components/LApp.vue'
 import AndroidApp from '../components/AndroidApp.vue'
 import AdbBtn from '../components/adb-btn.vue'
-import LappCompileBtn from '../components/LappCompileBtn.vue'
-import DragPushToDevice from '../components/dragPushToDevice.vue'
 import AppList from '@/components/AppList.vue'
 
 import { mapState } from 'vuex'
+import tools from '../../main/tools'
 
 export default {
   name: 'landing-page',
@@ -69,8 +70,6 @@ export default {
     DeviceList,
     AndroidApp,
     AdbBtn,
-    LappCompileBtn,
-    DragPushToDevice,
     lapp,
     AppList
   },
@@ -83,7 +82,12 @@ export default {
       showAppInfoDialog: false,
       currentAppInfo: [],
       loadingEvent: {done: true, message: ''},
-      operationList: [{name: '截屏', cmd: '_screenCap'}, {name: '包名', cmd: '_getAppInfo'}, {name: 'root', cmd: '_rootDevice'}, {name: '投屏', cmd: '_startScrcpy'}
+      operationList: [{name: '截屏', cmd: '_screenCap'},
+        {name: '包名', cmd: '_getAppInfo'},
+        {name: 'root', cmd: '_rootDevice'},
+        {name: '投屏', cmd: '_startScrcpy'},
+        {name: '设备IP', cmd: '_getDeviceIP'},
+        {name: '系统设置', cmd: '_openSystemSetting'}
       ]
     }
   },
@@ -130,9 +134,15 @@ export default {
       this.$router.push('/Config')
     },
     // 显示当前app信息
-    showAppInfo (e) {
-      this.currentAppInfo = e.message
-      this.showAppInfoDialog = true
+    showMessage (e) {
+      console.log('----', e)
+      if (e.message) {
+        this.currentAppInfo = e.message
+        this.showAppInfoDialog = true
+      }
+      if (e.prompt) {
+        this.$message.success(e.prompt)
+      }
     },
     lappCompileCallback (event) {
       this.loadingEvent = event
@@ -143,6 +153,12 @@ export default {
           this.$message.error(event.message)
         }
       }
+    },
+    startCmd () {
+      tools._startCMD()
+    },
+    newWindow () {
+
     }
   }
 }

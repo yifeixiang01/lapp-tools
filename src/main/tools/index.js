@@ -66,7 +66,7 @@ function _getDevices () {
  * 打开cmd
  */
 function _startCMD () {
-  var result = spawn('cmd.exe', ['/s', '/c', 'ipconfig'])
+  var result = spawn('powershell', ['adb logcat'])
   result.on('close', function (code) {
     console.log('child process exited with code :' + code)
   })

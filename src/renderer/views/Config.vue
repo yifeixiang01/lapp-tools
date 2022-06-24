@@ -12,12 +12,15 @@
         <el-button type="primary" @click="submitForm('AppConfig')">保存</el-button>
       </el-form-item>
     </el-form>  
+    <div class="path">{{cwd}}</div>
   </div>
 </template>
 <script>
 // import { mapState } from 'vuex'
 import Store from 'electron-store'
-let cwd = process.cwd() + ((process.env.NODE_ENV === 'development') ? '/extraResources/scrcpy' : '/resources/extraResources/scrcpy')
+import path from 'path'
+
+let cwd = path.join(process.cwd(), ((process.env.NODE_ENV === 'development') ? '/extraResources/scrcpy' : '/resources/extraResources/scrcpy'))
 
 const store = new Store()
 const fs = require('fs')
@@ -41,7 +44,8 @@ export default {
             }
           }
         ]
-      }
+      },
+      cwd
     }
   },
   created () {
@@ -75,5 +79,9 @@ export default {
 }
 </script>
 <style scoped>
-
+  .path{
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+  }
 </style>

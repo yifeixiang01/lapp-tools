@@ -12,11 +12,14 @@ import adbkit from '../main/adbkit'
 import {ipcRenderer, shell} from 'electron'
 import { mapState } from 'vuex'
 // import fs from 'fs'
+import path from 'path'
 import Store from 'electron-store'
 
 // const {dialog} = require('electron').remote
 // const path = require('path')
 const store = new Store()
+let cwd = path.join(process.cwd(), ((process.env.NODE_ENV === 'development') ? '/extraResources/scrcpy' : '/resources/extraResources/scrcpy'))
+console.log('adb 路径', cwd)
 
 export default {
   name: 'wetools1',
