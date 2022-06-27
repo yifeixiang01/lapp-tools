@@ -2,6 +2,7 @@
 const { exec, spawn } = require('child_process')
 const os = require('os')
 const fs = require('fs')
+// const logcat = require('adbkit-logcat')
 // let cwd = process.cwd() + ((process.env.NODE_ENV === 'development') ? '/extraResources/lapp-compile' : '/resources/extraResources/lapp-compile')
 
 function _renameFile (oldPath, newPath) {

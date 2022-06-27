@@ -277,6 +277,29 @@ function _getDeviceIP ({serial}) {
     })
   })
 }
+
+/**
+ * 开始抓取log信息
+ * @returns
+ */
+function _startLog ({ serial, params }) {
+  params.fromNowOn = false
+  let keywordsStr = params.keywords ? ` | grep ${params.case ? ' -i' : ''} ${params.keywords}` : ''
+  let isFromNowOn = params.fromNowOn ? 'logcat -c &&' : ''
+  let cmdStr = `start cmder.exe /K adb -s ${serial} shell "${isFromNowOn} logcat ${keywordsStr}"`
+  // let cmdStr = 'start git-bash.exe '
+  console.log('cmd', cmdStr)
+  let result = exec(cmdStr, {cwd: 'C:/Program Files/Git'}, (err, stdout, stderr) => {
+    console.log('err', err)
+    console.log('stdout', stdout)
+    console.log('stderr', stderr)
+    if (err) {
+      result.kill()
+    }
+  })
+  console.log('log result', result)
+}
+
 export default {
   _screenCap,
   _rootDevice,
@@ -294,5 +317,6 @@ export default {
   _removeAllFileInDevice,
   _createDirInDevice,
   _openSystemSetting,
-  _getDeviceIP
+  _getDeviceIP,
+  _startLog
 }

@@ -17,8 +17,6 @@
           <el-col :span="4" v-for="operation in operationList" :key="operation.name">
             <adb-btn :text="operation.name" :cmdFn="operation.cmd" :params="{outputPath: AppConfig.outputPath}" @adbcallback="showMessage"/>
           </el-col>
-          <el-button type="primary" size="mini" @click="startCmd">CMD</el-button>
-          <el-button type="primary" size="mini" @click="newWindow">新窗口</el-button>
         </el-row>
       </el-card>
 
@@ -35,6 +33,29 @@
           <el-col :span="4"  v-for="app in lappList" :key="app.name">
             <lapp :icon="app.icon" :name="app.name" :shape="app.shape" :path="app.path"/>
           </el-col>
+        </el-row>
+      </el-card>
+
+      <!-- log查看 -->
+      <el-card class="box-card" body-style="height: 75px;">
+        <div slot="header">
+          <span>Log查看</span>
+        </div>
+        <el-row>
+          <el-form :inline="true" :model="logForm">
+            <el-form-item>
+              <el-input v-model="logForm.keywords" placeholder="请输入关键词"></el-input>
+            </el-form-item>
+            <el-form-item>
+              <el-checkbox v-model="logForm.case">忽略大小写</el-checkbox>
+            </el-form-item>
+            <el-form-item>
+              <el-checkbox v-model="logForm.fromNowOn">清空历史</el-checkbox>
+            </el-form-item>
+            <el-form-item>
+              <el-button type="primary" @click="onOpenLog" :disabled="!selectedDevice">确定</el-button>
+            </el-form-item>
+          </el-form>
         </el-row>
       </el-card>
     </el-main>
@@ -62,7 +83,7 @@ import AdbBtn from '../components/adb-btn.vue'
 import AppList from '@/components/AppList.vue'
 
 import { mapState } from 'vuex'
-import tools from '../../main/tools'
+import adb from '../../main/adb'
 
 export default {
   name: 'landing-page',
@@ -88,7 +109,12 @@ export default {
         {name: '投屏', cmd: '_startScrcpy'},
         {name: '设备IP', cmd: '_getDeviceIP'},
         {name: '系统设置', cmd: '_openSystemSetting'}
-      ]
+      ],
+      logForm: {
+        keywords: '',
+        case: false,
+        fromNowOn: false
+      }
     }
   },
   computed: {
@@ -154,11 +180,8 @@ export default {
         }
       }
     },
-    startCmd () {
-      tools._startCMD()
-    },
-    newWindow () {
-
+    onOpenLog () {
+      adb._startLog({serial: this.selectedDevice.serial, params: {case: this.logForm.case, fromNowOn: this.logForm.fromNowOn, keywords: this.logForm.keywords}})
     }
   }
 }
