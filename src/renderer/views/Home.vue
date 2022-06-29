@@ -8,18 +8,6 @@
     </el-header>
 
     <el-main>
-      <!-- 设备操作 -->
-      <el-card class="box-card" body-style="height: 75px;">
-        <div slot="header">
-          <span>设备操作</span>
-        </div>
-        <el-row type="flex">
-          <el-col :span="4" v-for="operation in operationList" :key="operation.name">
-            <adb-btn :text="operation.name" :cmdFn="operation.cmd" :params="{outputPath: AppConfig.outputPath}" @adbcallback="showMessage"/>
-          </el-col>
-        </el-row>
-      </el-card>
-
       <!-- 应用管理 -->
       <el-card class="box-card" body-style="height: 75px;">
         <div slot="header">
@@ -37,15 +25,12 @@
       </el-card>
 
       <!-- log查看 -->
-      <el-card class="box-card" body-style="height: 75px;">
+      <el-card class="box-card" body-style="height: 95px;">
         <div slot="header">
           <span>Log查看</span>
         </div>
-        <el-row>
-          <el-form :inline="true" :model="logForm">
-            <el-form-item>
-              <el-input v-model="logForm.keywords" placeholder="请输入关键词"></el-input>
-            </el-form-item>
+        <el-form :inline="true" :model="logForm">
+          <el-row>
             <el-form-item>
               <el-checkbox v-model="logForm.case">忽略大小写</el-checkbox>
             </el-form-item>
@@ -53,9 +38,29 @@
               <el-checkbox v-model="logForm.fromNowOn">清空历史</el-checkbox>
             </el-form-item>
             <el-form-item>
-              <el-button type="primary" @click="onOpenLog" :disabled="!selectedDevice">确定</el-button>
+              <el-checkbox v-model="logForm.isOutput">输出到文件</el-checkbox>
             </el-form-item>
-          </el-form>
+          </el-row>
+          <el-row>
+            <el-form-item>
+              <el-input v-model="logForm.keywords" placeholder="请输入关键词"></el-input>
+            </el-form-item>
+            <el-form-item>
+              <el-button type="primary" @click="onOpenLog" :disabled="!selectedDevice" :loading="recordingLog">{{recordingLog ? '记录中': '确定'}}</el-button>
+            </el-form-item>
+          </el-row>
+        </el-form>
+      </el-card>
+
+      <!-- 设备操作 -->
+      <el-card class="box-card" body-style="height: 75px;">
+        <div slot="header">
+          <span>设备操作</span>
+        </div>
+        <el-row type="flex">
+          <el-col :span="4" v-for="operation in operationList" :key="operation.name">
+            <adb-btn :text="operation.name" :cmdFn="operation.cmd" @adbcallback="showMessage"/>
+          </el-col>
         </el-row>
       </el-card>
     </el-main>
@@ -81,10 +86,11 @@ import lapp from '@/components/LApp.vue'
 import AndroidApp from '../components/AndroidApp.vue'
 import AdbBtn from '../components/adb-btn.vue'
 import AppList from '@/components/AppList.vue'
-
+import path from 'path'
 import { mapState } from 'vuex'
-import adb from '../../main/adb'
-
+import tools from '../../main/tools'
+const { exec } = require('child_process')
+const cwd = path.join(process.cwd(), ((process.env.NODE_ENV === 'development') ? '/extraResources/scrcpy' : '/resources/extraResources/scrcpy'))
 export default {
   name: 'landing-page',
   components: {
@@ -113,8 +119,10 @@ export default {
       logForm: {
         keywords: '',
         case: false,
-        fromNowOn: false
-      }
+        fromNowOn: false,
+        isOutput: false
+      },
+      recordingLog: false
     }
   },
   computed: {
@@ -181,7 +189,44 @@ export default {
       }
     },
     onOpenLog () {
-      adb._startLog({serial: this.selectedDevice.serial, params: {case: this.logForm.case, fromNowOn: this.logForm.fromNowOn, keywords: this.logForm.keywords}})
+      this.startLog({serial: this.selectedDevice.serial, params: this.logForm})
+    },
+    startLog ({ serial, params }) {
+      if (this.recordingLog) return
+
+      this.recordingLog = true
+
+      if (!params.isOutput) {
+        let keywordsStr = params.keywords ? ` | grep ${params.case ? ' -i' : ''} ${params.keywords}` : ''
+        let isFromNowOn = params.fromNowOn ? 'logcat -c &&' : ''
+        let cmdStr = `start cmd.exe /K adb -s ${serial} shell "${isFromNowOn} logcat ${keywordsStr}"`
+        // let cmdStr = 'start git-bash.exe '
+        console.log('cmd', cmdStr)
+        let result = exec(cmdStr, {cwd}, (err, stdout, stderr) => {
+          console.log('err', err)
+          console.log('stdout', stdout)
+          console.log('stderr', stderr)
+          this.recordingLog = false
+          if (err) {
+            result.kill()
+          }
+        })
+      } else {
+        console.log('输出log到文件')
+        let outputPath = this.AppConfig.outputPath
+        let keywordsStr = params.keywords ? `>find ${params.keywords}` : ''
+        let cmdStr = `start cmd.exe /K adb -s ${serial} logcat ${keywordsStr} >${outputPath}/log-${tools._formateDate()}.txt`
+        console.log(cmdStr)
+        let result = exec(cmdStr, {cwd}, (err, stdout, stderr) => {
+          console.log('err', err)
+          console.log('stdout', stdout)
+          console.log('stderr', stderr)
+          this.recordingLog = false
+          if (err) {
+            result.kill()
+          }
+        })
+      }
     }
   }
 }

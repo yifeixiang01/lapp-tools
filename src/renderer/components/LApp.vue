@@ -17,7 +17,7 @@ const fs = require('fs')
 const { exec } = require('child_process')
 
 export default {
-  name: 'LightApp',
+  name: 'LAP-GUI',
   props: {
     icon: String,
     name: String,

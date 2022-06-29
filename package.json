@@ -1,5 +1,5 @@
 {
-  "name": "lapp-tools",
+  "name": "LAP-GUI",
   "version": "1.0.0",
   "author": "yifeixiang",
   "description": "轻应用桌面工具",
@@ -19,7 +19,7 @@
     "postinstall": "npm run lint:fix"
   },
   "build": {
-    "productName": "lite-tools",
+    "productName": "LAP-GUI",
     "appId": "com.tencent.wetools",
     "directories": {
       "output": "build"

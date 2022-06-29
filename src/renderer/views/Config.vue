@@ -17,19 +17,16 @@
 </template>
 <script>
 // import { mapState } from 'vuex'
-import Store from 'electron-store'
 import path from 'path'
-
+import { mapState } from 'vuex'
 let cwd = path.join(process.cwd(), ((process.env.NODE_ENV === 'development') ? '/extraResources/scrcpy' : '/resources/extraResources/scrcpy'))
 
-const store = new Store()
 const fs = require('fs')
 export default {
   name: 'Config',
   data () {
     return {
       prompt: `首次使用，请将此路径添加到系统环境变量：${cwd}`,
-      AppConfig: store.get('AppConfig') || {},
       rules: {
         outputPath: [
           { trigger: 'blur',
@@ -47,6 +44,11 @@ export default {
       },
       cwd
     }
+  },
+  computed: {
+    ...mapState({
+      AppConfig: state => state.AppConfig
+    })
   },
   created () {
     console.log(this.$store)

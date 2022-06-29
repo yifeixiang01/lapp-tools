@@ -35,7 +35,8 @@ export default {
   name: 'DeviceList',
   data () {
     return {
-      deviceIp: ''
+      deviceIp: '',
+      historyDevices: []
     }
   },
   computed: {
@@ -46,6 +47,12 @@ export default {
   },
   mounted () {
     this.setCurrentDevice()
+    this.historyDevices = store.get('historyDevices') || []
+
+    if (this.historyDevices.length === 0) {
+      this.historyDevices = [{value: '10.53.133.221'}, {value: '10.53.135.60'}]
+      store.set('historyDevices', this.historyDevices)
+    }
   },
   methods: {
     setCurrentDevice () {
@@ -60,11 +67,12 @@ export default {
         adb._connectDevice({serial: this.deviceIp}).catch(err => {
           this.$message.error(err.toString())
         })
-        let historyDevices = store.get('historyDevices') || []
-        let filterDevices = historyDevices.filter(item => item.value === this.deviceIp)
-        if (filterDevices.length === 0) historyDevices.unshift({value: this.deviceIp})
-        // 历史记录最多只保存10条记录
-        store.set('historyDevices', historyDevices.slice(0, 10))
+        let filterDevices = this.historyDevices.filter(item => item.value === this.deviceIp)
+        if (filterDevices.length === 0) {
+          this.historyDevices.unshift({value: this.deviceIp})
+          // 历史记录最多只保存10条记录
+          store.set('historyDevices', this.historyDevices.slice(0, 10))
+        }
       }
     },
     handleDisconnect (index, row) {
@@ -72,8 +80,8 @@ export default {
       adb._disconnectDevice({serial: row.serial})
     },
     querySearch (queryString, cb) {
-      let historyDevices = store.get('historyDevices') || []
-      let query = queryString ? historyDevices.filter(item => item.value.indexOf(queryString) > -1) : historyDevices
+      console.log('search', this.historyDevices, queryString)
+      let query = queryString ? this.historyDevices.filter(item => item.value.indexOf(queryString) > -1) : this.historyDevices
       cb(query)
     },
     handleRestart (index, row) {

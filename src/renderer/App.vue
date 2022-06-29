@@ -15,6 +15,8 @@ import { mapState } from 'vuex'
 import path from 'path'
 import Store from 'electron-store'
 
+const helpDoc = 'https://alidocs.dingtalk.com/i/nodes/mdvQnONayjBJKL4p9jye8PY2MeXzp5o0?nav=share&navQuery=spaceId%3De3RmQZRryxP2GaP6&iframeQuery=utm_source%3Dportal%26utm_medium%3Dportal_myspace_file_tree'
+const adbDoc = 'https://alidocs.dingtalk.com/i/team/e3RmQZRryxP2GaP6/docs/e3RmQY5lr01ZjmaP# 「adb 常用命令」'
 // const {dialog} = require('electron').remote
 // const path = require('path')
 const store = new Store()
@@ -22,7 +24,7 @@ let cwd = path.join(process.cwd(), ((process.env.NODE_ENV === 'development') ? '
 console.log('adb 路径', cwd)
 
 export default {
-  name: 'wetools1',
+  name: 'LAP-GUI',
   data () {
     return {
 
@@ -37,7 +39,6 @@ export default {
     })
   },
   created () {
-    this.checkConfig()
     this.onDevices()
 
     // 检测是否有新版本
@@ -58,17 +59,31 @@ export default {
     ipcRenderer.send('show-context-menu')
     ipcRenderer.on('context-menu-command', (event, text) => {
       switch (text) {
-        case 'openDoc': shell.openExternal('https://www.showdoc.com.cn/wetools?page_id=6294887021426043'); break
+        case 'openDoc': shell.openExternal(helpDoc); break
         case 'setConfig': this.$route.name !== 'Config' && this.$router.replace('/Config'); break
         case 'lapp': this.$route.name !== 'Home' && this.$router.replace('/'); break
+        case 'openAdbDoc': shell.openExternal(adbDoc)
       }
     })
+  },
+  mounted () {
+    this.checkConfig()
   },
   methods: {
     // 打开应用时，先检测有没有配置，没有的话，会跳转配置页
     checkConfig () {
-      if (!store.get('AppConfig')) {
-        this.$router.push({path: '/Config'})
+      let appConfig = store.get('AppConfig')
+      console.log(appConfig)
+      if (!appConfig) {
+        this.$alert(`首次安装需要配置文件输出目录，点击确定去配置`, '提示', {
+          confirmButtonText: '确定',
+          showClose: false,
+          callback: action => {
+            if (action === 'confirm') {
+              this.$router.push({path: '/Config'})
+            }
+          }
+        })
       }
     },
     onDevices () {
@@ -109,6 +124,9 @@ export default {
 </script>
 
 <style>
+::-webkit-scrollbar {
+  width: 0 !important;
+}
   /* CSS */
 
   /* body{

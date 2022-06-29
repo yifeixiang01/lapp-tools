@@ -16,7 +16,7 @@ if (process.env.NODE_ENV !== 'development') {
   global.__static = require('path').join(__dirname, '/static').replace(/\\/g, '\\\\')
 }
 
-let mainWindow, newWindow
+let mainWindow
 const winURL = process.env.NODE_ENV === 'development'
   ? `http://localhost:9080`
   : `file://${__dirname}/index.html`
@@ -26,8 +26,8 @@ function createWindow () {
    * Initial window options
    */
   mainWindow = new BrowserWindow({
-    height: 662,
-    width: 820,
+    width: 650,
+    height: 652,
     maximizable: false,
     useContentSize: true,
     resizable: true,
@@ -103,41 +103,24 @@ function createMenu (event) {
       ]
     },
     {
-      label: 'log',
-      click: function () {
-        console.log('new window')
-        createNewWindow()
-      }
-    },
-    {
-      label: '帮助文档',
-      click: function () {
-        // event.sender.send('context-menu-command', 'openDoc')
-      }
+      label: '帮助',
+      submenu: [
+        {
+          label: '使用说明',
+          click: function () {
+            event.sender.send('context-menu-command', 'openDoc')
+          }
+        },
+        {
+          label: 'ADB指令',
+          click: function () {
+            event.sender.send('context-menu-command', 'openAdbDoc')
+          }
+        }
+      ]
     }
   ]
 
   let menu = Menu.buildFromTemplate(template)
   Menu.setApplicationMenu(menu)
-}
-
-function createNewWindow () {
-  if (newWindow) {
-    newWindow.focus()
-    return
-  }
-  newWindow = new BrowserWindow({
-    width: 900,
-    height: 620,
-    minWidth: 900,
-    minHeight: 620,
-    frame: true,
-    fullscreen: false,
-    title: 'log输出',
-    autoHideMenuBar: true
-  })
-  newWindow.loadURL(winURL + '#/log')
-  newWindow.on('close', () => {
-    newWindow = null
-  })
 }

@@ -14,7 +14,7 @@ function _screenCap ({serial, outputPath}) {
   return new Promise(resolve => {
     let date = tools._formateDate()
     execSync(`adb -s ${serial} shell screencap -p /sdcard/screencap.png`, {cwd})
-    execSync(`adb -s ${serial} pull /sdcard/screencap.png ${outputPath}/screen_${date}.png`)
+    execSync(`adb -s ${serial} pull /sdcard/screencap.png ${outputPath}/screen_${date}.png`, {cwd})
     resolve({prompt: '截屏成功！'})
   })
 }
@@ -33,10 +33,19 @@ function _rootDevice ({serial}) {
       } else if (stdout.indexOf('cannot run as root') > -1) {
         reject(new Error('root失败！'))
       } else {
+        _remountDevice({serial})
         resolve({pompt: 'root成功！'})
       }
       console.log(stderr)
     })
+  })
+}
+/**
+ * 车机remount
+ */
+function _remountDevice ({serial}) {
+  return new Promise((resolve) => {
+    execSync(`adb -s ${serial} remount`, {cwd})
   })
 }
 
@@ -122,8 +131,8 @@ function _getAppInfo ({serial}) {
       if (stdout.indexOf('no devices/emulators') > -1) {
         reject(new Error('设备连接中断'))
       }
-
-      stdout && resolve({ message: stdout })
+      let reg = /{.*}/
+      stdout && resolve({ message: stdout.match(reg)[0] })
     })
   })
 }
@@ -174,7 +183,7 @@ function _pushFileToDevice ({serial, filePath, aimPath}) {
     // 先判断设备上将要push的目录是否存在
     _isExistFileInDevice({serial, filePath: aimPath}).then(() => {
       console.log(`adb -s ${serial} push ${filePath} ${aimPath}`)
-      let workerProcess = exec(`adb -s ${serial} push ${filePath} ${aimPath}`, {cwd: './'})
+      let workerProcess = exec(`adb -s ${serial} push ${filePath} ${aimPath}`, {cwd})
 
       workerProcess.stdout.on('data', data => {
         console.log('push stdout', data)
@@ -212,14 +221,14 @@ function _startApp ({serial, packageName}) {
   return new Promise((resolve, reject) => {
     exec(`adb -s ${serial} shell am start ${packageName}`, {cwd}, (error, stdout, stderr) => {
       if (error) {
-        console.log('111111error', JSON.stringify(error))
+        console.log('startApp error', JSON.stringify(error))
       }
-      console.log('222222stdout', stdout)
+      console.log('startApp stdout', stdout)
       if (stdout.indexOf('no devices/emulators') > -1) {
         reject(new Error('设备连接中断'))
       }
       if (stderr.toLowerCase().indexOf('permission denial') > -1) {
-        console.log('33333Permission denied')
+        console.log('startApp Permission denied')
         reject(new Error('Permission denied'))
       } else {
         resolve()
@@ -278,28 +287,6 @@ function _getDeviceIP ({serial}) {
   })
 }
 
-/**
- * 开始抓取log信息
- * @returns
- */
-function _startLog ({ serial, params }) {
-  params.fromNowOn = false
-  let keywordsStr = params.keywords ? ` | grep ${params.case ? ' -i' : ''} ${params.keywords}` : ''
-  let isFromNowOn = params.fromNowOn ? 'logcat -c &&' : ''
-  let cmdStr = `start cmder.exe /K adb -s ${serial} shell "${isFromNowOn} logcat ${keywordsStr}"`
-  // let cmdStr = 'start git-bash.exe '
-  console.log('cmd', cmdStr)
-  let result = exec(cmdStr, {cwd: 'C:/Program Files/Git'}, (err, stdout, stderr) => {
-    console.log('err', err)
-    console.log('stdout', stdout)
-    console.log('stderr', stderr)
-    if (err) {
-      result.kill()
-    }
-  })
-  console.log('log result', result)
-}
-
 export default {
   _screenCap,
   _rootDevice,
@@ -317,6 +304,5 @@ export default {
   _removeAllFileInDevice,
   _createDirInDevice,
   _openSystemSetting,
-  _getDeviceIP,
-  _startLog
+  _getDeviceIP
 }

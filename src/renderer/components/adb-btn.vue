@@ -8,8 +8,7 @@ export default {
   name: 'AppList',
   props: {
     text: String,
-    cmdFn: String,
-    params: {}
+    cmdFn: String
   },
   data () {
     return {
@@ -18,15 +17,20 @@ export default {
   },
   computed: {
     ...mapState({
-      selectedDevice: state => state.Device.selectedDevice
+      selectedDevice: state => state.Device.selectedDevice,
+      AppConfig: state => state.AppConfig
     })
-  },
-  mounted () {
-
   },
   methods: {
     adbCmd () {
-      adb[this.cmdFn]({serial: this.selectedDevice.deviceId, ...this.params}).then(res => {
+      if (this.cmdFn === '_screenCap') {
+        this.handleCmd(this.cmdFn, {serial: this.selectedDevice.serial, outputPath: this.AppConfig.outputPath})
+        return
+      }
+      this.handleCmd(this.cmdFn, {serial: this.selectedDevice.serial})
+    },
+    handleCmd (cmdFn, params = {}) {
+      adb[cmdFn](params).then(res => {
         this.$emit('adbcallback', {message: res.message, prompt: res.prompt})
       }).catch(err => {
         this.$message.error(err.toString())

@@ -1,4 +1,4 @@
-# lapp-tools
+# LAP-GUI
 
 > An electron-vue project
 
