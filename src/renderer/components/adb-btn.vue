@@ -3,6 +3,7 @@
 </template>
 <script>
 import adb from '../../main/adb/index'
+
 import { mapState } from 'vuex'
 export default {
   name: 'AppList',

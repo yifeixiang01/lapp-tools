@@ -282,7 +282,9 @@ function _getDeviceIP ({serial}) {
       console.log('获取设备ip err', err)
       console.log('获取设备ip stdout', stdout)
       console.log('获取设备ip stderr', stderr)
-      resolve({message: stdout})
+      let reg = /addr:([0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3})/g
+
+      resolve({message: stdout.match(reg)[0]})
     })
   })
 }

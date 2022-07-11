@@ -67,14 +67,14 @@ export default {
     // push轻应用包到车机目录
     async pushToDevice () {
       // 因存在项目路径变更的情况，push前会再次检查项目路径是否正确
-      if (!fs.existsSync(`${this.path}/config.json`) || !fs.existsSync(`${this.path}/package.json`)) {
+      if (!fs.existsSync(`${this.path}/package.json`)) {
         this.$message.success('轻应用项目路径有误，请检查后再试')
         return
       }
 
       let appConfig = JSON.parse(fs.readFileSync(`${this.path}/config.json`, 'UTF8'))
-      let aimDevicePath = `/data/data/com.gwm.applet/files/applet/html/id_${appConfig.appId}/a`
-
+      let aimDevicePath1 = `/data/data/com.gwm.applet/files/applet/html/id_${appConfig.appId}/a`
+      let aimDevicePath2 = `/data/data/com.gwm.applet/files/applet/html/id_${appConfig.appId}/b`
       // 项目目录dist下没有编译后的文件，会先执行编译
       if (!fs.existsSync(`${this.path}/dist/pages`) && !fs.existsSync(`${this.path}/dist/css`) && !fs.existsSync(`${this.path}/dist/js`)) {
         // await this.projectCompile()
@@ -83,7 +83,15 @@ export default {
       }
 
       console.log('appConfig', appConfig)
-      console.log('车机端轻应用目录', aimDevicePath)
+      // console.log('车机端轻应用目录', aimDevicePath1)
+      this.pushFile(appConfig, aimDevicePath1)
+      this.pushFile(appConfig, aimDevicePath2)
+
+      // await adb._closeApp({serial: this.selectedDevice.serial, appName: 'com.gwm.applet'})
+      // await adb._startApp({serial: this.selectedDevice.serial, packageName: 'com.gwm.applet/.MainActivity'})
+      this.$message.success(`push成功,请重新打“${appConfig.appName}”`)
+    },
+    async pushFile (appConfig, aimDevicePath) {
       // 判断车机是否存在轻应用目录
       await adb._isExistFileInDevice({serial: this.selectedDevice.serial, filePath: aimDevicePath}).catch((err) => {
         console.log('判断是否存在轻应用项目', err)
@@ -101,11 +109,7 @@ export default {
         console.error(err)
       })
 
-      adb._pushFileToDevice({serial: this.selectedDevice.serial, filePath: `${this.path}/dist/.`, aimPath: aimDevicePath}).then(res => {
-        this.$message.success(`push成功`)
-      }).catch(err => {
-        this.$message.error(err.toString())
-      })
+      await adb._pushFileToDevice({serial: this.selectedDevice.serial, filePath: `${this.path}/dist/.`, aimPath: aimDevicePath})
     },
     deleteFile () {
       let appConfig = JSON.parse(fs.readFileSync(`${this.path}/config.json`, 'UTF8'))

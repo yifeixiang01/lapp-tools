@@ -2,7 +2,7 @@
   <div :class="['app-wrapper', !selectedDevice? 'disable': '']" @click="startApp" @contextmenu="mouseRight">
     <el-avatar :src="src" :icon="defaultIcon" fit="fill" :shape="shape"></el-avatar>
     <span class="app-name">{{name}}</span>
-
+    
     <div :class="['operation', showOperation? 'operation-show': '']" @mouseleave="mouseOver">
       <div class="btn danger" @click.stop="clearAppStorage">清缓存</div>
       <div class="btn warning" @click.stop="closeApp">关闭</div>

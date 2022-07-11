@@ -32,6 +32,9 @@
         <el-form :inline="true" :model="logForm">
           <el-row>
             <el-form-item>
+              <el-input v-model="logForm.keywords" placeholder="请输入关键词"></el-input>
+            </el-form-item>
+            <el-form-item>
               <el-checkbox v-model="logForm.case">忽略大小写</el-checkbox>
             </el-form-item>
             <el-form-item>
@@ -43,10 +46,7 @@
           </el-row>
           <el-row>
             <el-form-item>
-              <el-input v-model="logForm.keywords" placeholder="请输入关键词"></el-input>
-            </el-form-item>
-            <el-form-item>
-              <el-button type="primary" @click="onOpenLog" :disabled="!selectedDevice" :loading="recordingLog">{{recordingLog ? '记录中': '确定'}}</el-button>
+              <el-button type="primary" @click="onOpenLog" :disabled="!selectedDevice" :loading="recordingLog">{{recordingLog ? '记录中': '开始'}}</el-button>
             </el-form-item>
           </el-row>
         </el-form>
@@ -215,7 +215,7 @@ export default {
         console.log('输出log到文件')
         let outputPath = this.AppConfig.outputPath
         let keywordsStr = params.keywords ? `>find ${params.keywords}` : ''
-        let cmdStr = `start cmd.exe /K adb -s ${serial} logcat ${keywordsStr} >${outputPath}/log-${tools._formateDate()}.txt`
+        let cmdStr = `adb -s ${serial} logcat ${keywordsStr} >${outputPath}/log-${tools._formateDate()}.txt`
         console.log(cmdStr)
         let result = exec(cmdStr, {cwd}, (err, stdout, stderr) => {
           console.log('err', err)

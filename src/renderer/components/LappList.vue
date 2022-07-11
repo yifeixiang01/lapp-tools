@@ -98,7 +98,7 @@ export default {
               console.log('校验path', fs.existsSync(`${value}/config.json`), fs.existsSync(`${value}/package.json`))
               if (value === '') {
                 callback(new Error('请输入轻应用的项目路径'))
-              } else if (!fs.existsSync(`${value}/config.json`) || !fs.existsSync(`${value}/package.json`)) {
+              } else if (!fs.existsSync(`${value}/package.json`)) {
                 callback(new Error('请输入正确的轻应用项目路径'))
               } else {
                 callback()
@@ -156,8 +156,8 @@ export default {
     },
     // 删除轻应用
     handleDelete (index, row) {
-      this.lappList.splice(index, 1)
-      this.$store.commit('setLappList', {list: this.lappList})
+      this.list.splice(index, 1)
+      this.$store.commit('setLappList', {list: this.list})
     },
     // 对话框 取消
     dialogCancel (formName) {

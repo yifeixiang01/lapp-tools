@@ -17,7 +17,7 @@
       <el-table-column  label="类型"  prop="linkType" width="100"></el-table-column>
       <el-table-column  label="操作" width="120">
         <template slot-scope="scope">
-          <el-button type="text" size="mini"  @click="handleRestart(scope.$index, scope.row)">重启</el-button>
+          <!-- <el-button type="text" size="mini"  @click="handleRestart(scope.$index, scope.row)">重启</el-button> -->
           <el-button type="text" size="mini"  @click="handleDisconnect(scope.$index, scope.row)" v-if="scope.row.serial.indexOf(':') > 0">断开</el-button>
         </template>
       </el-table-column>

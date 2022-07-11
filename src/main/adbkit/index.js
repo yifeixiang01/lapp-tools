@@ -120,6 +120,14 @@ function shareDevice (serial, hostIP, callback) {
   })
 }
 
+/**
+ * 获取设备ip
+ */
+function getDeviceIP ({serial}) {
+  client.getDHCPIpAddress(serial).then(res => {
+    console.log('获取设备ip', res)
+  })
+}
 export default {
-  connect, onDevices, tcpip, usbDeviceToTcp, shareDevice
+  connect, onDevices, tcpip, usbDeviceToTcp, shareDevice, getDeviceIP
 }
