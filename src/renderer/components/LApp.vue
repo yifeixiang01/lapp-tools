@@ -66,30 +66,53 @@ export default {
     },
     // push轻应用包到车机目录
     async pushToDevice () {
-      // 因存在项目路径变更的情况，push前会再次检查项目路径是否正确
-      if (!fs.existsSync(`${this.path}/package.json`)) {
-        this.$message.success('轻应用项目路径有误，请检查后再试')
-        return
-      }
+      if (!this.checkPath()) return
 
-      let appConfig = JSON.parse(fs.readFileSync(`${this.path}/config.json`, 'UTF8'))
+      // 获取本地config.json路径
+      let appConfigPath = this.getAppConfigPath()
+
+      let appConfig = JSON.parse(fs.readFileSync(`${appConfigPath}/config.json`, 'UTF8'))
       let aimDevicePath1 = `/data/data/com.gwm.applet/files/applet/html/id_${appConfig.appId}/a`
       let aimDevicePath2 = `/data/data/com.gwm.applet/files/applet/html/id_${appConfig.appId}/b`
-      // 项目目录dist下没有编译后的文件，会先执行编译
-      if (!fs.existsSync(`${this.path}/dist/pages`) && !fs.existsSync(`${this.path}/dist/css`) && !fs.existsSync(`${this.path}/dist/js`)) {
-        // await this.projectCompile()
-        this.$message.error(`${appConfig.appName}项目未编译`)
-        return
-      }
 
       console.log('appConfig', appConfig)
-      // console.log('车机端轻应用目录', aimDevicePath1)
       this.pushFile(appConfig, aimDevicePath1)
       this.pushFile(appConfig, aimDevicePath2)
 
       // await adb._closeApp({serial: this.selectedDevice.serial, appName: 'com.gwm.applet'})
       // await adb._startApp({serial: this.selectedDevice.serial, packageName: 'com.gwm.applet/.MainActivity'})
       this.$message.success(`push成功,请重新打“${appConfig.appName}”`)
+    },
+    // 检查项目路径是否正确
+    checkPath () {
+      // 因存在项目路径变更的情况，push前会再次检查项目路径是否正确
+      if (!fs.existsSync(`${this.path}/package.json`) && !fs.existsSync(`${this.path}/config.json`)) {
+        this.$message.success('轻应用项目路径有误，请检查后再试')
+        return false
+      }
+
+      // 项目目录dist下没有编译后的文件，会先执行编译
+      if (fs.existsSync(`${this.path}/package.json`) && !fs.existsSync(`${this.path}/dist/config.json`)) {
+        // await this.projectCompile()
+        this.$message.error(`项目未编译`)
+        return false
+      }
+      return true
+    },
+    // 获取config.json所在的文件路径，config.json所在目录下的文件是需要push到车机上的
+    getAppConfigPath () {
+      let path = ''
+      let path1 = `${this.path}/dist`
+      let path2 = `${this.path}`
+      console.log('---111', path1)
+      if (fs.existsSync(`${path1}/config.json`)) {
+        console.log('-----path 1')
+        path = path1
+      } else if (fs.existsSync(`${path2}/config.json`)) {
+        console.log('-----path 2')
+        path = path2
+      }
+      return path
     },
     async pushFile (appConfig, aimDevicePath) {
       // 判断车机是否存在轻应用目录
@@ -101,15 +124,15 @@ export default {
         adb._createDirInDevice({serial: this.selectedDevice.serial, path: `${projectDir}`})
         adb._createDirInDevice({serial: this.selectedDevice.serial, path: `${aimDevicePath}`})
       })
-
+      let appConfigPath = this.getAppConfigPath()
       // 开始push前，先清除设备上目录下的文件
-      await adb._isExistFileInDevice({serial: this.selectedDevice.serial, filePath: `${aimDevicePath}/pages`}).then(() => {
+      await adb._isExistFileInDevice({serial: this.selectedDevice.serial, filePath: `${aimDevicePath}/config.json`}).then(() => {
         adb._removeAllFileInDevice({serial: this.selectedDevice.serial, path: aimDevicePath})
       }).catch(err => {
         console.error(err)
       })
-
-      await adb._pushFileToDevice({serial: this.selectedDevice.serial, filePath: `${this.path}/dist/.`, aimPath: aimDevicePath})
+      console.log('push Path', `${appConfigPath}/.`)
+      await adb._pushFileToDevice({serial: this.selectedDevice.serial, filePath: `${appConfigPath}/.`, aimPath: aimDevicePath})
     },
     deleteFile () {
       let appConfig = JSON.parse(fs.readFileSync(`${this.path}/config.json`, 'UTF8'))

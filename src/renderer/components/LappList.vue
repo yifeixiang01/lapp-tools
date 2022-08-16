@@ -98,7 +98,7 @@ export default {
               console.log('校验path', fs.existsSync(`${value}/config.json`), fs.existsSync(`${value}/package.json`))
               if (value === '') {
                 callback(new Error('请输入轻应用的项目路径'))
-              } else if (!fs.existsSync(`${value}/package.json`)) {
+              } else if (!fs.existsSync(`${value}/package.json`) && !fs.existsSync(`${value}/config.json`)) {
                 callback(new Error('请输入正确的轻应用项目路径'))
               } else {
                 callback()

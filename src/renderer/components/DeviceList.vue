@@ -50,7 +50,7 @@ export default {
     this.historyDevices = store.get('historyDevices') || []
 
     if (this.historyDevices.length === 0) {
-      this.historyDevices = [{value: '10.53.133.221'}, {value: '10.53.135.60'}]
+      this.historyDevices = [{value: '10.53.132.69'}, {value: '10.53.135.60'}]
       store.set('historyDevices', this.historyDevices)
     }
   },

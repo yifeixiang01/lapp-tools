@@ -4,6 +4,7 @@ import { app, BrowserWindow, ipcMain, Menu, globalShortcut } from 'electron'
 import { autoUpdater } from 'electron-updater'
 
 import Store from 'electron-store'
+import path from 'path'
 
 const store = new Store()
 console.log(store)
@@ -31,11 +32,12 @@ function createWindow () {
     maximizable: false,
     useContentSize: true,
     resizable: true,
-    // frame: false,   //无边框
+    frame: true, // 无边框
     webPreferences: {
       enableRemoteModule: true,
       nodeIntegration: true
-    }
+    },
+    icon: path.join('extraResources/images/app-icon2.ico')
   })
 
   mainWindow.loadURL(winURL)
@@ -46,7 +48,10 @@ function createWindow () {
   console.log('***---appPath', app.getAppPath())
 }
 
-app.on('ready', createWindow)
+app.on('ready', function () {
+  createWindow()
+  autoUpdater.checkForUpdatesAndNotify()
+})
 
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
@@ -125,3 +130,30 @@ function createMenu (event) {
   let menu = Menu.buildFromTemplate(template)
   Menu.setApplicationMenu(menu)
 }
+
+autoUpdater.on('checking-for-update', () => {
+  console.log('Checking for update...')
+})
+
+autoUpdater.on('update-available', (info) => {
+  console.log('Update available.')
+})
+
+autoUpdater.on('update-not-available', (info) => {
+  console.log('Update not available.')
+})
+
+autoUpdater.on('error', (err) => {
+  console.log('Error in auto-updater. ' + err)
+})
+
+autoUpdater.on('download-progress', (progressObj) => {
+  let logMessage = 'Download speed: ' + progressObj.bytesPerSecond
+  logMessage = logMessage + ' - Downloaded ' + progressObj.percent + '%'
+  logMessage = logMessage + ' (' + progressObj.transferred + '/' + progressObj.total + ')'
+  console.log(logMessage)
+})
+
+autoUpdater.on('update-downloaded', (info) => {
+  console.log('Update downloaded')
+})

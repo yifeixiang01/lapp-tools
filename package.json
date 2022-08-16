@@ -19,7 +19,7 @@
     "postinstall": "npm run lint:fix"
   },
   "build": {
-    "productName": "LAP-GUI",
+    "productName": "屠龙刀",
     "appId": "com.tencent.wetools",
     "directories": {
       "output": "build"
@@ -55,7 +55,7 @@
       "icon": "build/icons/icon.icns"
     },
     "win": {
-      "icon": "build/icons/icon.ico"
+      "icon": "./extraResources/images/app-icon2.ico"
     },
     "linux": {
       "icon": "build/icons"
